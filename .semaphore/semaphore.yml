@@ -40,7 +40,7 @@ blocks:
           - checkout
           - 'cache restore '
           - go mod vendor
-          - source env-sample
+          - source env_test
       jobs:
         - name: Test
           commands:
