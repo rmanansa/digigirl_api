@@ -16,7 +16,10 @@ blocks:
             - export GOPATH=~/go
             - 'export PATH=/home/semaphore/go/bin:$PATH'
             - checkout
-            - source env-test
             - go get ./…
+            - source env-test
             - go test ./…
             - go build -v .
+      env_vars:
+        - name: FOO_1
+          value: BAR_1
