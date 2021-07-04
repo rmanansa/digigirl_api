@@ -1,0 +1,40 @@
+version: v1.0
+name: First pipeline
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: test-api
+    task:
+      prologue:
+        commands:
+          - checkout
+      jobs:
+        - name: go test
+          commands:
+            - sem-service start postgres
+            - sem-version go 1.16
+            - export GO111MODULE=on
+            - export GOPATH=~/go
+            - 'export PATH=/home/semaphore/go/bin:$PATH'
+            - checkout
+            - go get ./…
+            - source env-test
+            - go test ./…
+            - go build -v .
+  - name: Unit tests
+    task:
+      prologue:
+        commands:
+          - checkout
+      jobs:
+        - name: Unit tests 1/3
+          commands:
+            - echo "run 1/3"
+        - name: Unit tests 2/3
+          commands:
+            - echo "run 2/3"
+        - name: Unit tests 3/3
+          commands:
+            - echo "run 3/3"
