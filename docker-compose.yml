@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  db:
+    image: "postgres:13"
+    container_name: "digigirl_postgres"
+    environment:
+      POSTGRES_USER: "ramil"
+      POSTGRES_PASSWORD: "trinity1"
+    ports:
+      - "5432:5432"
+    volumes:
+      - digigirl_dbdata:/var/lib/postgresql/data
+
+volumes:
+  digigirl_dbdata:
