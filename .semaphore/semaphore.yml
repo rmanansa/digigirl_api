@@ -5,36 +5,65 @@ agent:
     type: e1-standard-2
     os_image: ubuntu1804
 blocks:
-  - name: test-api
+  - name: Install
     task:
       prologue:
         commands:
           - checkout
       jobs:
-        - name: go test
+        - name: Download Modules
           commands:
-            - sem-service start postgres
             - sem-version go 1.16
-            - export GO111MODULE=on
-            - export GOPATH=~/go
-            - 'export PATH=/home/semaphore/go/bin:$PATH'
             - checkout
-            - go get ./…
-            - source env-test
-            - go test ./…
-            - go build -v .
-  - name: Unit tests
+            - cache restore
+            - go mod vendor
+            - cache store
+      env_vars:
+        - name: GO111MODULE
+          value: 'on'
+        - name: GOFLAGS
+          value: '-mod=vendor'
+    dependencies: []
+  - name: Test
+    dependencies:
+      - Install
     task:
+      env_vars:
+        - name: GO111MODULE
+          value: 'on'
+        - name: GOFLAGS
+          value: '-mod=vendor'
       prologue:
         commands:
+          - sem-version go 1.13
+          - sem-service start postgres
           - checkout
+          - 'cache restore '
+          - go mod vendor
+          - source env-sample
       jobs:
-        - name: Unit tests 1/3
+        - name: Test
           commands:
-            - echo "run 1/3"
-        - name: Unit tests 2/3
+            - go test ./...
+  - name: Build
+    dependencies:
+      - Test
+    task:
+      env_vars:
+        - name: GO111MODULE
+          value: 'on'
+        - name: GOFLAGS
+          value: '-mod=vendor'
+      prologue:
+        commands:
+          - sem-version go 1.13
+          - sem-service start postgres
+          - checkout
+          - 'cache restore '
+          - go mod vendor
+          - source env-sample
+      jobs:
+        - name: Build
           commands:
-            - echo "run 2/3"
-        - name: Unit tests 3/3
-          commands:
-            - echo "run 3/3"
+            - go build -v -o go-mux.bin
+            - artifact push project --force go-mux.bin
